@@ -1,6 +1,3 @@
-// Sturdy desk clamp with threads
-// Using threads.scad library - download from https://github.com/rcolyer/threads-scad
-use <threads.scad>
 
 
 
@@ -82,11 +79,11 @@ module oneHLeg(base, w=1)
 {
     
     mv([-0.5,0,0])
-    hole(2, w=10)
+    //hole(2, w=10)
     mv([-1.5,0,0])
-    hole(2, w = 10)
+    hole(2, w = 10) // element hole
     mv([-1.5,0,0])
-    hole(2, w = 10)
+    hole(2, w = 10) // clamp mount hole
     mv([1.5,0,0])
         box(base,w,2); 
 
@@ -105,9 +102,10 @@ module clamp(base=5, h = 7, boxd=10)
     
 }
 
-include <screw.scad>
+// clamp.scad now only defines the clamp module (no automatic instantiation)
+// screw.scad is included where needed by a caller.
 
 //screw(2,bx=20, stw=12);
 
 //translate([20,0,0]) ballCatcher(4);
-clamp();
+// End of clamp module definition file.

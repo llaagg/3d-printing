@@ -1,56 +1,34 @@
-// Screw and related helper modules moved from clamp.scad
+// Sturdy desk clamp with threads
+// Using threads.scad library - download from https://github.com/rcolyer/threads-scad
+use <threads.scad>
 
-module screw(sh=2, bx=10, stw=12)
+
+// w - width of the screw head 
+//    * height of screw nut
+//    * half of that is screw cylinder on top
+// h - height of the screw bolt
+module screw(w=10, h=-1)
 {
-    st = 6;
-    h = sh * 10;
-    bh = bx/2; // base height
-    translate([0,0,bh])
-    {
-        ScrewThread(st,h);
-        translate([0,0, h+bh/2 -1 ])
-            sphere(d=st-2);
-    }
-    translate([0,0,bh/2])
-    cube([bx,bx,bh], center=true);
+
+    MetricBolt(w,h, 0.4);
+
+    translate([0 , 0 , 0 + w/4 +  w +h  ])
+        cylinder(h= w/2 , r= (w/2) - 1 , center=true);
 }
 
 
-// h - ball radius
-// ew - width of hand
-module ballCatcher_bcHand(h=10, ew=2)
+module ballCatcher(w=10)
 {
-     rotate([90,0,0])
-        linear_extrude(1, center = true)
-            polygon(
-                points=
-                [
-                    [h * 0.15 ,0],
-                    [h * 0.4, h * 0.25],
-                    [h * 0.5, h * 0.5],
-                    [h * 0.4, h * 0.75],
-                    [h * 0.6, h * 0.75],
-                    [h * 0.6, h * 0.0],
-                ]
-            );
-}
+    bc_h = w/2;
+    
 
-// br - ball radius
-module ballCatcher(br=6)
-{
-    howMany = 8;
-    ew = 2;
-    bh=2;
-
-    translate([0,0,bh])
+    difference()
     {
-        for(i = [0: 360/howMany : 360])
-        {
-            rotate([0,0,i])
-                ballCatcher_bcHand(br, ew);
-        }
+        translate([0, 0, (bc_h/2)+1]) 
+            cylinder(h=bc_h+1, r=w, center=true);
+        
+        translate([0, 0, bc_h/2]) 
+            cylinder(h=bc_h+1, r=(w/2)+0.5, center=true);
     }
-
-    linear_extrude(bh)
-        circle(d = br + ew);
+    
 }
