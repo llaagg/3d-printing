@@ -1,20 +1,11 @@
-
-
-
-//translate([-10,-20,0])
-//    MetricBoltSet(6, 10, 1);
-
-
-//ScrewHole(6,10)
-//    translate([-5,-5,0])
-//    cube(10,10);
-
 $fn=32;
 
 
-module hole(b, box_w=10, w=6){
-    h = b*box_w;
-    ScrewHole(w,h, position=[0,0,-h/2,]  )
+module hole(b, box_w=10, w=6, oy=0  ){
+    h =  b*box_w;
+    ho = b*box_w*oy;
+    translate([0,0,-h/2-ho])
+        ScrewHole(w,h, position=[0,0,-h/2-ho]  )
         children();
 }
 
@@ -79,25 +70,27 @@ module oneHLeg(base, w=1)
 {
     
     mv([-0.5,0,0])
-    //hole(2, w=10)
+        hole(0.8, w=10)
     mv([-1.5,0,0])
-    hole(2, w = 10) // element hole
+//    hole(2, w = 10) // element hole
     mv([-1.5,0,0])
-    hole(2, w = 10) // clamp mount hole
+//    hole(2, w = 10) // clamp mount hole
     mv([1.5,0,0])
-        box(base,w,2); 
+        box(base,w,1); 
 
 }
 
-module clamp(base=5, h = 7, boxd=10)
+module clamp(base=5, h = 5, boxd=10)
 {
 
-    box(2,3,h+1,      box_w=boxd);
+    box(1,2,h+1,      box_w=boxd);
 
-    mv([0,0,h/2])   oneHLeg(base, 3);
+    mv([0,0,h/2])   
+        oneHLeg(base, 2);
 
     
-    mv([0,0,-h/2])  oneHLeg(base, 3);
+    mv([0,0,-h/2])  
+        oneHLeg(base, 2);
     
     
 }

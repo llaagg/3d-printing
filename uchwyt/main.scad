@@ -4,13 +4,15 @@
 include <clamp.scad>
 include <screw.scad>
 
+// let's work with setup that 
+//  screw bolt is 10 in diamter
+
 // Show clamp and screw separately in the same scene:
 //clamp();
-translate([40,0,0])
-    screw(w=10, h=20);
 
-translate([-40,0,0])
-    ballCatcher(w=10);
+
+
+
 
 // Uncomment to show only one at a time:
 //clamp();
