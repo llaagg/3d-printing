@@ -1,11 +1,17 @@
 $fn=32;
 
 
-module hole(b, box_w=10, w=6, oy=0  ){
-    h =  b*box_w;
-    ho = b*box_w*oy;
-    translate([0,0,-h/2-ho])
-        ScrewHole(w,h, position=[0,0,-h/2-ho]  )
+// box_w - width of the box module (size of one module)
+// b - number of modules across the box
+// w - width of the hole
+// oy - offset in the y direction
+module hole(b=1, boxd=10, w=6, oy=1  ){
+    h =  b*boxd;
+    ho = h*oy;
+
+    y = h/2;
+
+    ScrewHole(w,h, position=[0, 0,  -y]  )
         children();
 }
 
@@ -42,11 +48,6 @@ module box(x,y,z, box_w=10, m=0.5){
     r = box_w * m;
     hull()
     {
-        /*cube([
-            t_x - r, 
-            t_y - r, 
-            t_z - r
-            ], center = true);*/
         ob([1,1,1], m=m, box_w=box_w) sa(t_x, t_y, t_z, m=m, box_w=box_w);
         
         ob([1,-1,1], m=m, box_w=box_w) sa(t_x, -t_y, t_z, ,m=m, box_w=box_w);
@@ -66,15 +67,15 @@ module mv(v, box_w=10){
         children();
 }
 
-module oneHLeg(base, w=1)
+module oneHLeg(base, w=1, boxd=10)
 {
-    
+    //mv([-0.5,0,0.5])
     mv([-0.5,0,0])
-        hole(0.8, w=10)
+        hole(b=1, w=10, boxd=boxd, oy=1)
     mv([-1.5,0,0])
-//    hole(2, w = 10) // element hole
+        //hole(2, w = 10) // element hole
     mv([-1.5,0,0])
-//    hole(2, w = 10) // clamp mount hole
+        //hole(2, w = 10) // clamp mount hole
     mv([1.5,0,0])
         box(base,w,1); 
 
@@ -82,23 +83,10 @@ module oneHLeg(base, w=1)
 
 module clamp(base=5, h = 5, boxd=10)
 {
+    //box(1,2,h+1, box_w=boxd);
 
-    box(1,2,h+1,      box_w=boxd);
+    //mv([0,0,h/2]) 
+    oneHLeg(base, 2, boxd);
 
-    mv([0,0,h/2])   
-        oneHLeg(base, 2);
-
-    
-    mv([0,0,-h/2])  
-        oneHLeg(base, 2);
-    
-    
+    //mv([0,0,-h/2]) oneHLeg(base, 2);
 }
-
-// clamp.scad now only defines the clamp module (no automatic instantiation)
-// screw.scad is included where needed by a caller.
-
-//screw(2,bx=20, stw=12);
-
-//translate([20,0,0]) ballCatcher(4);
-// End of clamp module definition file.

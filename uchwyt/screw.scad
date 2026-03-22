@@ -2,7 +2,6 @@
 // Using threads.scad library - download from https://github.com/rcolyer/threads-scad
 use <threads.scad>
 
-
 // w - width of the screw head 
 //    * height of screw nut
 //    * half of that is screw cylinder on top
@@ -33,9 +32,12 @@ module ballCatcher(w=10)
     
 }
 
+module supporters()
+{
+    translate([40,0,0])
+        screw(w=10, h=20);
 
-translate([40,0,0])
-    screw(w=10, h=20);
+    translate([-40,0,0])
+        ballCatcher(w=10);
 
-translate([-40,0,0])
-    ballCatcher(w=10);
+}
