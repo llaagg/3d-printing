@@ -81,19 +81,21 @@ module mv(v, box_w=10){
 module oneHLeg(base, w=1)
 {
     
-    //hole(1)
-    mv([-2,0,0])
-    hole(1, w = 12)
-    mv([-2,0,0])
-    hole(1, w = 12)
-    mv([2,0,0])
-        box(base,w,1); 
+    mv([-0.5,0,0])
+    hole(2, w=10)
+    mv([-1.5,0,0])
+    hole(2, w = 10)
+    mv([-1.5,0,0])
+    hole(2, w = 10)
+    mv([1.5,0,0])
+        box(base,w,2); 
 
 }
 
-module clamp(base=5, h = 3, boxd=10)
+module clamp(base=5, h = 7, boxd=10)
 {
-    box(1,3,h,      box_w=boxd);
+
+    box(2,3,h+1,      box_w=boxd);
 
     mv([0,0,h/2])   oneHLeg(base, 3);
 
