@@ -5,13 +5,17 @@ $fn=32;
 // b - number of modules across the box
 // w - width of the hole
 // oy - offset in the y direction
-module hole(b=1, boxd=10, w=6, oy=1  ){
+module hole(b=1, boxd=10, w=6, oym=1 ){
     h =  b*boxd;
-    ho = h*oy;
 
-    y = h/2;
+    // user may want smaller hole use oy multiplicator
+    hm = h * oym;
+    y = hm / 2; // move to match the center of the box
+    
+    //y = y - (h/2);
 
-    ScrewHole(w,h, position=[0, 0,  -y]  )
+    // offest the y 
+    ScrewHole(w,hm, position=[0, 0,  -y ]  )
         children();
 }
 
@@ -70,8 +74,8 @@ module mv(v, box_w=10){
 module oneHLeg(base, w=1, boxd=10)
 {
     //mv([-0.5,0,0.5])
-    mv([-0.5,0,0])
-        hole(b=1, w=10, boxd=boxd, oy=1)
+    //mv([-0.5,0,0])
+        hole(b=1, w=10, boxd=boxd)
     mv([-1.5,0,0])
         //hole(2, w = 10) // element hole
     mv([-1.5,0,0])
