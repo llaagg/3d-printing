@@ -5,18 +5,22 @@ $fn=32;
 // b - number of modules across the box
 // w - width of the hole
 // oy - offset in the y direction
-module hole(b=1, boxd=10, w=6, oym=1 ){
+module hole(b=1, boxd=10, w=6, oym = 1 ){
     h =  b*boxd;
 
-    // user may want smaller hole use oy multiplicator
     hm = h * oym;
-    y = hm / 2; // move to match the center of the box
     
-    //y = y - (h/2);
+    y = - (hm/2);
 
-    // offest the y 
-    ScrewHole(w,hm, position=[0, 0,  -y ]  )
-        children();
+    // and now let's move it to the surace
+    //y = (h /2) + (hm/2) - 1; // 1 is the margin for the hole to be fully on the surface
+
+    // translate([0,0,-y])
+    //     cube([w, w, hm],true);
+
+    ScrewHole(w, hm, position=[0, 0,   y ]  )
+//        cube([w, w, hm],true)
+            children();
 }
 
 
