@@ -15,7 +15,7 @@ module hole(b=1, boxd=10, w=6, oym = 1, top = true){
     yo = a * (h / 2 - hm / 2);
     of = y + yo;
 
-    ScrewHole(w, hm, position=[0, 0, of]  )
+    ScrewHole(w, hm, position=[0, 0, of] , tolerance = 0.4 )
        children();
 
 }
@@ -72,18 +72,29 @@ module mv(v, box_w=10){
         children();
 }
 
-module oneHLeg(base, w=1, boxd=10, d=true)
+module oneHLeg(base, w=1, boxd=10, d=true, all=false)
 {
-    //mv([-0.5,0,0.5])
-    mv([-0.5,0,0])
-        hole(b=1, w=10, boxd=boxd, oym = 0.5, top = d)
-    mv([-1.5,0,0])
-        hole(2, w = 10) // element hole
-    mv([-1.5,0,0])
-        hole(2, w = 10) // clamp mount hole
-    mv([1.5,0,0])
-        box(base,w,1); 
+    if(all)
+    {
+        mv([-0.5,0,0])
+            hole(b=1, w=10, boxd=boxd, oym = 0.5, top = d)
+        mv([-1.5,0,0])
+            hole(2, w = 10) // element hole
+        mv([-1.5,0,0])
+            hole(2, w = 10) // clamp mount hole
+        mv([1.5,0,0])
+            box(base,w,1); 
 
+    }
+    else
+    {
+        mv([-0.5,0,0])
+        mv([-1.5,0,0])
+        mv([-1.5,0,0])
+            hole(2, w = 10) // clamp mount hole
+        mv([1.5,0,0])
+            box(base,w,1); 
+    }
 }
 
 module clamp(base=5, h = 5, boxd=10)
@@ -91,8 +102,8 @@ module clamp(base=5, h = 5, boxd=10)
     box(1,2,h+1, box_w=boxd);
 
     mv([0,0, h/2 + 0.5 ]) 
-        oneHLeg(base, 2, boxd);
+        oneHLeg(base, 2, boxd, true, true);
 
     mv([0,0, -h/2 -0.5 ]) 
-        oneHLeg(base, 2, boxd, false);
+        oneHLeg(base, 2, boxd, false, false);
 }
