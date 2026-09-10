@@ -3,7 +3,7 @@ use <plates.scad>;
 plate_w = 50;
 plate_l = 50;
 plate_h = 15;
-gap = 10;
+gap = 0;
 
 for (i = [0 : 2]) {
 	translate([i * (plate_w + gap), 0, 0])
