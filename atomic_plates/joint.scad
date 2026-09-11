@@ -89,13 +89,13 @@ module angle_joint(fold_deg, gap = bridge_gap) {
 }
 
 // ============================== output ==============================
-/* [Output] */
-render_mode = "print";  // [print:standalone joints for printing, demo:assembled plate pair]
-demo_fold   = 45;      // [0:15:90] fold angle used by "demo" mode
+render_mode = "print";  // "print" -> three standalone joints ready to slice
+                        // "demo"  -> one assembled plate pair, for a visual check
+demo_fold   = 45;       // fold angle used by "demo" mode
 
 if (render_mode == "print") {
 
-    fold_angles = [0, 30, 45, 60];
+    fold_angles = [0, 30, 45];
     spacing = 30;
     for (i = [0 : len(fold_angles) - 1])
         translate([0, i * spacing, 0])
