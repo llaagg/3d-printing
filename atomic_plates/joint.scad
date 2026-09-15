@@ -17,7 +17,7 @@ use <plates.scad>;
 $fn = 32;
 
 // ---------- fit parameters (must match plates.scad's wall thickness) ----------
-wall      = 4;      // wall thickness of the plates, mm
+wall      = 3.5;      // wall thickness of the plates, mm
 fit_clear = 0.25;   // per-side clearance between tab and slot, mm — tune after a test print
 
 // slot the tab must pass through — keep these equal to plates.scad's
