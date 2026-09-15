@@ -1,6 +1,6 @@
 // Parametric footprint test box: closed top, open bottom, thick walls
-wall   = 5;     // side wall thickness, mm (inner edge is 5 mm closer to center)
-wall_margin = 5;   // margin from the outside edge, mm
+wall   = 4;     // side wall thickness, mm (inner edge is 5 mm closer to center)
+wall_margin = 2;   // margin from the outside edge, mm
 top_t  = 4;     // top surface thickness, mm
 corner_r = 8;   // outer corner rounding radius, mm (must be > wall for inside to round too)
 gap    = 10;    // spacing between boxes, mm
@@ -53,14 +53,20 @@ module plate_top(w, l, top_height = top_t) {
 }
 
 // Optional helper for prints that overfill the top edge by a small amount.
-// The trim is applied in XY only, so the top panel footprint is slightly smaller
-// while the top thickness stays the same.
+// The trim affects only the crown: the lower body keeps the full footprint,
+// and the topmost layer is inset slightly around the edge.
 module plate_top_trimmed(w, l, top_height = top_t, trim = 0.1) {
+    crown_h = min(trim, top_height);
+    body_h = max(top_height - crown_h, 0.01);
     inset_w = max(w - 2 * trim, 0.01);
     inset_l = max(l - 2 * trim, 0.01);
     inset_r = max(corner_r - trim, 0.01);
-    translate([trim, trim, 0])
-        rounded_box(inset_w, inset_l, top_height, inset_r, 0);
+
+    union() {
+        rounded_box(w, l, body_h, corner_r, 0);
+        translate([trim, trim, body_h])
+            rounded_box(inset_w, inset_l, crown_h, inset_r, 0);
+    }
 }
 
 // Build the open-bottom wall section. The wall section ends at the underside
@@ -80,7 +86,7 @@ module plate_walls(w, l, wall_height, joints = [], slot_height = wall_height) {
 
 // joints: list of [side, offset, z_offset] triples adding a slot cutout each,
 // e.g. [["east", 0, 0]]. Defaults to no slots (unchanged behavior).
-// top_trim: optional XY inset in mm for over-extrusion compensation.
+// top_trim: optional crown trim in mm for over-extrusion compensation.
 module footprint_box(w, l, h, joints = [], top_trim = 0) {
     wall_height = h ;
     plate_walls(w, l, wall_height, joints, slot_height = h);
