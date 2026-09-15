@@ -1,5 +1,6 @@
 // Parametric footprint test box: closed top, open bottom, thick walls
-wall   = 4;     // side wall thickness, mm
+wall   = 5;     // side wall thickness, mm (inner edge is 5 mm closer to center)
+wall_margin = 5;   // margin from the outside edge, mm
 top_t  = 4;     // top surface thickness, mm
 corner_r = 8;   // outer corner rounding radius, mm (must be > wall for inside to round too)
 gap    = 10;    // spacing between boxes, mm
@@ -7,10 +8,10 @@ gap    = 10;    // spacing between boxes, mm
 $fn = 32;
 
 // rounded rectangular prism, corners rounded on the xy plane only
-module rounded_box(w, l, h, r) {
+module rounded_box(w, l, h, r, m = wall_margin) {
     linear_extrude(height = h)
         hull() {
-            for (x = [r, w - r], y = [r, l - r])
+            for (x = [r + m, w - r - m], y = [r + m, l - r - m])
                 translate([x, y]) circle(r = r);
         }
 }
@@ -25,39 +26,69 @@ joint_slot_h = 6;     // slot height, mm
 // side: "north" | "south" | "east" | "west" — which outer wall to cut through
 // offset: shift of the slot center along the wall run, from the wall midpoint
 // z_offset: shift of the slot center along the wall height, from mid-height
-module wall_slot_cut(w, l, h, side, w_slot = joint_slot_w, h_slot = joint_slot_h, offset = 0, z_offset = 0) {
-    cut_len = wall + 2;      // through-cut, plus 1mm margin each side
+module wall_slot_cut(w, l, h, side, w_slot = joint_slot_w, h_slot = joint_slot_h, offset = 0, z_offset = 0, m_margin = wall_margin) {
+    
+    cut_len = wall + m_margin;      // through-cut, plus 1mm margin each side
     z_slot  = h/2 + z_offset - h_slot/2;
 
+    // offset by wall amrign
+    cut_len = wall + m_margin;      // through-cut, plus 1mm margin each side
     if (side == "east")
-        translate([w - wall - 1, l/2 + offset - w_slot/2, z_slot])
+        translate([w - wall - m_margin -1 , l/2 + offset - w_slot/2, z_slot])
             cube([cut_len, w_slot, h_slot]);
     else if (side == "west")
-        translate([-1, l/2 + offset - w_slot/2, z_slot])
+        translate([m_margin-1, l/2 + offset - w_slot/2, z_slot])
             cube([cut_len, w_slot, h_slot]);
     else if (side == "north")
-        translate([w/2 + offset - w_slot/2, l - wall - 1, z_slot])
+        translate([w/2 + offset - w_slot/2, l - wall - m_margin -1, z_slot])
             cube([w_slot, cut_len, h_slot]);
     else if (side == "south")
-        translate([w/2 + offset - w_slot/2, -1, z_slot])
+        translate([w/2 + offset - w_slot/2, +m_margin-1, z_slot])
             cube([w_slot, cut_len, h_slot]);
+}
+
+// Build the separate top plane. It sits on top of the wall section when split.
+module plate_top(w, l, top_height = top_t) {
+    rounded_box(w, l, top_height, corner_r,0 );
+}
+
+// Optional helper for prints that overfill the top edge by a small amount.
+// The trim is applied in XY only, so the top panel footprint is slightly smaller
+// while the top thickness stays the same.
+module plate_top_trimmed(w, l, top_height = top_t, trim = 0.1) {
+    inset_w = max(w - 2 * trim, 0.01);
+    inset_l = max(l - 2 * trim, 0.01);
+    inset_r = max(corner_r - trim, 0.01);
+    translate([trim, trim, 0])
+        rounded_box(inset_w, inset_l, top_height, inset_r, 0);
+}
+
+// Build the open-bottom wall section. The wall section ends at the underside
+// of the separate top plane.
+module plate_walls(w, l, wall_height, joints = [], slot_height = wall_height) {
+    inner_r = max(corner_r - wall, 0.1);
+    difference() {
+        rounded_box(w, l, wall_height, corner_r);
+        translate([wall, wall, -1])
+            // Extend beyond the top so the wall section stays open.
+            rounded_box(w - 2*wall, l - 2*wall, wall_height + 2, inner_r);
+        for (j = joints)
+                wall_slot_cut(w, l, slot_height, j[0], offset = j[1], z_offset = len(j) > 2 ? j[2] : 0);
+            
+    }
 }
 
 // joints: list of [side, offset, z_offset] triples adding a slot cutout each,
 // e.g. [["east", 0, 0]]. Defaults to no slots (unchanged behavior).
-module footprint_box(w, l, h, joints = []) {
-    inner_r = max(corner_r - wall, 0.1);
-    difference() {
-        rounded_box(w, l, h, corner_r);
-
-        // hollow out interior, leaving top plate and side walls
-        // cavity is open at the bottom (extends past z=0)
-        translate([wall, wall, -1])
-            rounded_box(w - 2*wall, l - 2*wall, h - top_t + 1, inner_r);
-
-        for (j = joints)
-            wall_slot_cut(w, l, h, j[0], offset = j[1], z_offset = len(j) > 2 ? j[2] : 0);
-    }
+// top_trim: optional XY inset in mm for over-extrusion compensation.
+module footprint_box(w, l, h, joints = [], top_trim = 0) {
+    wall_height = h ;
+    plate_walls(w, l, wall_height, joints, slot_height = h);
+    translate([0, 0, wall_height])
+        if (top_trim > 0)
+            plate_top_trimmed(w, l, top_t, top_trim);
+        else
+            plate_top(w, l, top_t);
 }
 
 // box sizes in mm (w, l, h), converted from cm
@@ -67,8 +98,31 @@ sizes = [
    // [200, 200, 15],   // 20 x 20 x 1.5 cm
 ];
 
+// "combined" keeps the assembled plate; "top" and "walls" export one part;
+// "split" lays both parts out side by side for printing.
+render_mode = "walls";
+split_gap = 10;
+
 for (i = [0 : len(sizes) - 1]) {
     x = sum([for (j = [0 : i - 1]) sizes[j][0] + gap]);
-    translate([x, 0, 0])
-        footprint_box(sizes[i][0], sizes[i][1], sizes[i][2]);
+    w = sizes[i][0];
+    l = sizes[i][1];
+    h = sizes[i][2];
+    wall_height = h - top_t;
+
+    translate([x, 0, 0]) {
+        if (render_mode == "combined")
+            footprint_box(w, l, h);
+        else if (render_mode == "top")
+            plate_top(w, l, top_t);
+        else if (render_mode == "top_trimmed")
+            plate_top_trimmed(w, l, top_t, 0.1);
+        else if (render_mode == "walls")
+            plate_walls(w, l, wall_height);
+        else if (render_mode == "split") {
+            plate_walls(w, l, wall_height);
+            translate([w + split_gap, 0, 0])
+                plate_top(w, l, top_t);
+        }
+    }
 }
