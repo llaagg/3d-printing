@@ -23,27 +23,32 @@ module rounded_box(w, l, h, r, m = wall_margin) {
 joint_slot_w = 12;   // slot width along the wall run, mm
 joint_slot_h = 6;     // slot height, mm
 
+// Build a list of [side, offset, z_offset] joint entries spaced along one wall.
+// start is the first slot center offset from the wall edge; pitch is the spacing.
+function make_side_joints(side, slot_count, pitch = 50, start = 25, z_offset = 0) = [
+    for (i = [0 : slot_count - 1])
+        [side, start + pitch * i, z_offset]
+];
+
 // side: "north" | "south" | "east" | "west" — which outer wall to cut through
-// offset: shift of the slot center along the wall run, from the wall midpoint
+// offset: distance of the slot center from the wall's left/bottom edge along the wall run
 // z_offset: shift of the slot center along the wall height, from mid-height
 module wall_slot_cut(w, l, h, side, w_slot = joint_slot_w, h_slot = joint_slot_h, offset = 0, z_offset = 0, m_margin = wall_margin) {
     
     cut_len = wall + m_margin;      // through-cut, plus 1mm margin each side
     z_slot  = h/2 + z_offset - h_slot/2;
 
-    // offset by wall amrign
-    cut_len = wall + m_margin;      // through-cut, plus 1mm margin each side
     if (side == "east")
-        translate([w - wall - m_margin -1 , l/2 + offset - w_slot/2, z_slot])
+        translate([w - wall - m_margin -1 , offset - w_slot/2, z_slot])
             cube([cut_len, w_slot, h_slot]);
     else if (side == "west")
-        translate([m_margin-1, l/2 + offset - w_slot/2, z_slot])
+        translate([m_margin-1, offset - w_slot/2, z_slot])
             cube([cut_len, w_slot, h_slot]);
     else if (side == "north")
-        translate([w/2 + offset - w_slot/2, l - wall - m_margin -1, z_slot])
+        translate([offset - w_slot/2, l - wall - m_margin -1, z_slot])
             cube([w_slot, cut_len, h_slot]);
     else if (side == "south")
-        translate([w/2 + offset - w_slot/2, +m_margin-1, z_slot])
+        translate([offset - w_slot/2, +m_margin-1, z_slot])
             cube([w_slot, cut_len, h_slot]);
 }
 
@@ -55,7 +60,7 @@ module plate_top(w, l, top_height = top_t) {
 // Optional helper for prints that overfill the top edge by a small amount.
 // The trim affects only the crown: the lower body keeps the full footprint,
 // and the topmost layer is inset slightly around the edge.
-module plate_top_trimmed(w, l, top_height = top_t, trim = 0.1) {
+module plate_top_trimmed(w, l, top_height = top_t, trim = 0.5) {
     crown_h = min(trim, top_height);
     body_h = max(top_height - crown_h, 0.01);
     inset_w = max(w - 2 * trim, 0.01);
@@ -97,38 +102,18 @@ module footprint_box(w, l, h, joints = [], top_trim = 0) {
             plate_top(w, l, top_t);
 }
 
-// box sizes in mm (w, l, h), converted from cm
-sizes = [
-    [50,  50,  15],   // 5 x 5 x 1.5 cm
-    //[100, 100, 15],   // 10 x 10 x 1.5 cm
-   // [200, 200, 15],   // 20 x 20 x 1.5 cm
-];
+// Build a printable footprint layout with joints on all four outer walls.
+module print_footprint(tt = 0.5, sizex = 50, sizey = 50, sizez = 15) {
+    slot_count_x = ceil(sizex / 50);
+    slot_count_y = ceil(sizey / 50);
+    slots = concat(
+        make_side_joints("north", slot_count_x),
+        make_side_joints("south", slot_count_x),
+        make_side_joints("east", slot_count_y),
+        make_side_joints("west", slot_count_y)
+    );
 
-// "combined" keeps the assembled plate; "top" and "walls" export one part;
-// "split" lays both parts out side by side for printing.
-render_mode = "walls";
-split_gap = 10;
-
-for (i = [0 : len(sizes) - 1]) {
-    x = sum([for (j = [0 : i - 1]) sizes[j][0] + gap]);
-    w = sizes[i][0];
-    l = sizes[i][1];
-    h = sizes[i][2];
-    wall_height = h - top_t;
-
-    translate([x, 0, 0]) {
-        if (render_mode == "combined")
-            footprint_box(w, l, h);
-        else if (render_mode == "top")
-            plate_top(w, l, top_t);
-        else if (render_mode == "top_trimmed")
-            plate_top_trimmed(w, l, top_t, 0.1);
-        else if (render_mode == "walls")
-            plate_walls(w, l, wall_height);
-        else if (render_mode == "split") {
-            plate_walls(w, l, wall_height);
-            translate([w + split_gap, 0, 0])
-                plate_top(w, l, top_t);
-        }
-    }
+    footprint_box(sizex, sizey, sizez,
+        joints = slots,
+        top_trim = tt);
 }
