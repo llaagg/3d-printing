@@ -5,6 +5,7 @@ top_t  = 4;     // top surface thickness, mm
 corner_r = 8;   // outer corner rounding radius, mm (must be > wall for inside to round too)
 gap    = 10;    // spacing between boxes, mm
 
+trim_top = 0.4; // top crown trim for over-extrusion compensation, mm
 $fn = 32;
 
 // rounded rectangular prism, corners rounded on the xy plane only
@@ -60,7 +61,7 @@ module plate_top(w, l, top_height = top_t) {
 // Optional helper for prints that overfill the top edge by a small amount.
 // The trim affects only the crown: the lower body keeps the full footprint,
 // and the topmost layer is inset slightly around the edge.
-module plate_top_trimmed(w, l, top_height = top_t, trim = 0.5) {
+module plate_top_trimmed(w, l, top_height = top_t, trim = top_trim) {
     crown_h = min(trim, top_height);
     body_h = max(top_height - crown_h, 0.01);
     inset_w = max(w - 2 * trim, 0.01);
