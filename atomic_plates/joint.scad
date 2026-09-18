@@ -75,15 +75,24 @@ module flange_block() {
 // Arm A stays horizontal (the reference plate); arm B tilts by fold_deg about
 // the wall-run axis (Y), matching a plate rotated up out of the flat plane.
 module angle_joint(fold_deg, gap = bridge_gap) {
-    module armA_xf() { translate([-gap/2, 0, 0]) rotate([0, 0, 180]) children(); }
-    module armB_xf() { translate([ gap/2, 0, 0]) rotate([0, fold_deg, 0]) children(); }
+    offset = (slot_h + 2*flange_pad)/2;
+
+    module armA_xf() { translate([-gap/2,  0, 0]) rotate([0, 0, 180]) translate([0, 0, offset]) children(); }
+    module armB_xf() { translate([ gap/2,  0, 0]) rotate([0, fold_deg, 0]) translate([0, 0, offset]) children(); }
 
     union() {
+        // let's offeset all not center
+        // then when we do rotation it's not around center of the object
+        
         hull() {
             armA_xf() flange_block();
             armB_xf() flange_block();
         }
-        armA_xf() { flange_block(); snap_tab(); }
-        armB_xf() { flange_block(); snap_tab(); }
+        armA_xf() { 
+            snap_tab(); 
+        }
+        armB_xf() {
+                snap_tab(); 
+        }
     }
 }
