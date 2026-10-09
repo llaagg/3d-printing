@@ -2,28 +2,35 @@ use <plates.scad>;
 use <joint.scad>;
 
 
-translate([0, 0, 19])
-    rotate([0, 180, 0])
-    print_footprint(sizex = 100, sizey = 100);
+// translate([0, 0, 19])
+//     rotate([0, 180, 0])
+//     print_footprint(sizex = 100, sizey = 100);
 
-translate([0, 130   , 19])
-    rotate([0, 180, 0])
-    print_footprint();
+translate([60, 60, 0])
+    showTwoPlates(90);
 
-translate([60, 130   , 19])
-    rotate([0, 180, 0])
-    print_footprint();
-
-translate([-60, 130   , 19])
-    rotate([0, 180, 0])
-    print_footprint();
-
-//
 module showTwoPlates(angle) {
-    translate([-50, 50 - 12, 0])
-        rotate([90, 0, 0])
-            print_footprint();
+     translate([0, 0   , 0])
+        rotate([0, 0, 0])
+        print_footprint();
+
+    translate([50, 0   , 0])
+        rotate([0, angle, 0])
+        print_footprint();
+
+    translate([50, 25   , 1])
+        angle_joint(angle);
+
+    translate([ -20, 0 , 70])
+        rotate([0, angle, 0])
+        print_footprint();
+
+    translate([  0, 25   , 14])
+        rotate([0, angle+90, 0])
+        angle_joint(angle);
+
 }
+
 
 // joints
 translate([30, 0,0])
@@ -35,7 +42,6 @@ translate([30, 0,0])
     translate([0, 15, 8.5])
         rotate([90, 0, 0])
             angle_joint(30);
-    //showTwoPlates(30);
 
     translate([0, 30, 8.5])
         rotate([90, 0, 0])

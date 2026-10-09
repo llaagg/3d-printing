@@ -84,7 +84,8 @@ module angle_joint(fold_deg, gap = bridge_gap) {
         // let's offeset all not center
         // then when we do rotation it's not around center of the object
         
-        hull() {
+        hull() 
+        {
             armA_xf() flange_block();
             armB_xf() flange_block();
         }
