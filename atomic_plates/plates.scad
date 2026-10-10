@@ -1,12 +1,20 @@
 // Parametric footprint test box: closed top, open bottom, thick walls
 wall   = 4;     // side wall thickness, mm (inner edge is 5 mm closer to center)
 wall_margin = 2;   // margin from the outside edge, mm
-top_t  = 4;     // top surface thickness, mm
-corner_r = 8;   // outer corner rounding radius, mm (must be > wall for inside to round too)
-gap    = 10;    // spacing between boxes, mm
 
+corner_r = 8;   // outer corner rounding radius, mm (must be > wall for inside to round too)
 trim_top = 0.4; // top crown trim for over-extrusion compensation, mm
+
 $fn = 32;
+
+// ---- Joint slot support ----
+// Rectangular through-cuts in a wall so a snap-fit joint (see joint.scad)
+// can be plugged into the plate. Slots are centered on the wall's height
+// by default and placed on the straight (non-rounded) section of the wall.
+joint_slot_w = 8;   // slot width along the wall run, mm
+joint_slot_h = 4;     // slot height, mm
+
+function plate_exports() = [joint_slot_w, joint_slot_h, wall, wall_margin];
 
 // rounded rectangular prism, corners rounded on the xy plane only
 module rounded_box(w, l, h, r, m = wall_margin) {
@@ -17,21 +25,12 @@ module rounded_box(w, l, h, r, m = wall_margin) {
         }
 }
 
-// ---- Joint slot support ----
-// Rectangular through-cuts in a wall so a snap-fit joint (see joint.scad)
-// can be plugged into the plate. Slots are centered on the wall's height
-// by default and placed on the straight (non-rounded) section of the wall.
-joint_slot_w = 30;   // slot width along the wall run, mm
-joint_slot_h = 6;     // slot height, mm
-
 // Build a list of [side, offset, z_offset] joint entries spaced along one wall.
 // start is the first slot center offset from the wall edge; pitch is the spacing.
 function make_side_joints(side, slot_count, pitch = 50, start = 25, z_offset = 0) = [
     for (i = [0 : slot_count - 1])
         [side, start + pitch * i, z_offset]
 ];
-
-function plate_exports() = [joint_slot_w, joint_slot_h];
 
 // side: "north" | "south" | "east" | "west" — which outer wall to cut through
 // offset: distance of the slot center from the wall's left/bottom edge along the wall run
@@ -95,18 +94,19 @@ module plate_walls(w, l, wall_height, joints = [], slot_height = wall_height) {
 // joints: list of [side, offset, z_offset] triples adding a slot cutout each,
 // e.g. [["east", 0, 0]]. Defaults to no slots (unchanged behavior).
 // top_trim: optional crown trim in mm for over-extrusion compensation.
-module footprint_box(w, l, h, joints = [], top_trim = 0) {
+// we can do prints with or without top trim - if 0 no trim and justnice plate
+module footprint_box(w, l, h, joints = [], top_trim = 0, top_height = 4) {
     wall_height = h ;
     plate_walls(w, l, wall_height, joints, slot_height = h);
     translate([0, 0, wall_height])
         if (top_trim > 0)
-            plate_top_trimmed(w, l, top_t, top_trim);
+            plate_top_trimmed(w, l, top_height, top_trim);
         else
-            plate_top(w, l, top_t);
+            plate_top(w, l, top_height);
 }
 
 // Build a printable footprint layout with joints on all four outer walls.
-module print_footprint(tt = 0.5, sizex = 50, sizey = 50, sizez = 15) {
+module print_footprint(tt = 0.5, sizex = 50, sizey = 50, sizez = 10, top = 4) {
     slot_count_x = ceil(sizex / 50);
     slot_count_y = ceil(sizey / 50);
     slots = concat(
@@ -118,5 +118,6 @@ module print_footprint(tt = 0.5, sizex = 50, sizey = 50, sizez = 15) {
 
     footprint_box(sizex, sizey, sizez,
         joints = slots,
-        top_trim = tt);
+        top_trim = tt,
+        top_height = top);
 }

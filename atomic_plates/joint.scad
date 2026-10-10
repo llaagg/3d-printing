@@ -17,14 +17,14 @@ use <plates.scad>;
 $fn = 32;
 
 // ---------- fit parameters (must match plates.scad's wall thickness) ----------
-wall      = 3;   // wall thickness of the plates, mm
 fit_clear = 0.25;   // per-side clearance between tab and slot, mm — tune after a test print
 
 plate_settings = plate_exports();
-// slot the tab must pass through — keep these equal to plates.scad's
-// joint_slot_w / joint_slot_h ("use" does not import variables across files)
+
 slot_w = plate_settings[0];
 slot_h = plate_settings[1];
+wall = plate_settings[2];  //-1
+wall_margin = plate_settings[3];
 
 // ---------- barb / snap geometry ----------
 barb_h   = 0.9;   // barb overhang past the nominal finger thickness, mm
@@ -34,9 +34,8 @@ slit     = 1.4;   // gap splitting the tab into two independent flexing fingers,
 lead_in  = 0.6;   // small chamfer at the very tip, mm
 
 // ---------- flange / bridge geometry ----------
-flange_t   = 2.5;   // flange thickness against the wall face, mm
-flange_pad = 2.5;   // flange overhang beyond the slot on each side, mm
-bridge_gap = 4;    // horizontal distance between the two plates' outer wall faces, mm
+flange_t   = wall_margin;   // flange thickness against the wall face, mm
+flange_pad = 2;   // flange overhang beyond the slot on each side, mm
 reach      = wall + barb_len + 1;  // tab length: through the wall, clear of the barb
 
 // One flexing finger with a one-way barb (2D profile in X-Z, extruded along Y).
@@ -66,26 +65,30 @@ module snap_tab(w = slot_w - 2*fit_clear, h = slot_h - 2*fit_clear) {
         barbed_finger(slit/2, finger_h, w);
 }
 
+function joint_height() = slot_h + 2*flange_pad;
+
 // The flat pad that presses against the wall's outer face (X in [-flange_t, 0]).
 module flange_block() {
     translate([-flange_t, -(slot_w/2 + flange_pad), -(slot_h/2 + flange_pad)])
-        cube([flange_t, slot_w + 2*flange_pad, slot_h + 2*flange_pad]);
+        cube([flange_t, slot_w + 2*flange_pad, joint_height()]);
 }
 
 // The full joint: two arms + a bridge, bent so the plates end up `fold_deg` apart.
 // Arm A stays horizontal (the reference plate); arm B tilts by fold_deg about
 // the wall-run axis (Y), matching a plate rotated up out of the flat plane.
-module angle_joint(fold_deg, gap = bridge_gap) {
-    offset = (slot_h + 2*flange_pad)/2 ;
+module angle_joint(fold_deg, top_h, h) {
+    offset = -top_h - h/2 ;
+    
+    //translate([0, 0, -t -h/2 + joint_h/2  ])
 
-    module armA_xf() { translate([-gap/2,  0, 0]) rotate([0, 0, 180]) translate([0, 0, offset]) children(); }
-    module armB_xf() { translate([ gap/2,  0, 0]) rotate([0, fold_deg, 0]) translate([0, 0, offset]) children(); }
+    module armA_xf() { translate([ -0,  0, 0]) rotate([0, 0, 180]) translate([flange_t, 0,  offset]) children(); }
+    module armB_xf() { translate([  0,  0, 0]) rotate([0, -fold_deg, 0]) translate([flange_t, 0, offset]) children(); }
 
     union() {
         // let's offeset all not center
         // then when we do rotation it's not around center of the object
         
-        //hull() 
+        hull() 
         {
             armA_xf() flange_block();
             armB_xf() flange_block();
