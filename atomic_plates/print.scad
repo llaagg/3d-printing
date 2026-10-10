@@ -2,10 +2,34 @@ use <plates.scad>;
 use <joint.scad>;
 
 
-sizes = plate_exports();
+print(2);
 
-demo90(90);
+module print(pcount = 1, w=50)
+{
+    h=10;
+    t=5;
 
+    th=h+t;
+
+    joint_h = joint_height();
+    joint_w = joint_width();
+
+    angles = [0, 15, 45, 60, 90];
+    
+    //all angles moved by 180 degrees around the Z-axis
+    for(i = [0:len(angles)-1])
+    {
+        rotate([0, 90, 0])
+            translate([-joint_w/2, 80, (i + 2) * 20])
+            rotate([0, 0, 90])
+            angle_joint(angles[i], t, h);
+    }
+
+    for(i = [0:pcount-1])
+        translate([i*w + i*5, 0, th])
+            rotate([0, 180, 0])
+            print_footprint(sizex = w, sizey = w, sizez = h, top = t);
+}
 
 module demo90(a=90)
 {
@@ -25,11 +49,6 @@ module demo90(a=90)
     rotate([0, a, 0])
         translate([-50, 0, -th])
         print_footprint(sizez = h, top = t);
-}
-
-module printDemo() {
-  translate([60, 60, 0])
-    showTwoPlates(90);
 }
 
 module printLarge() {

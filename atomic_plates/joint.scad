@@ -66,6 +66,7 @@ module snap_tab(w = slot_w - 2*fit_clear, h = slot_h - 2*fit_clear) {
 }
 
 function joint_height() = slot_h + 2*flange_pad;
+function joint_width() = slot_w + 2*flange_pad;
 
 // The flat pad that presses against the wall's outer face (X in [-flange_t, 0]).
 module flange_block() {
@@ -81,17 +82,19 @@ module angle_joint(fold_deg, top_h, h) {
     
     //translate([0, 0, -t -h/2 + joint_h/2  ])
 
-    module armA_xf() { translate([ -0,  0, 0]) rotate([0, 0, 180]) translate([flange_t, 0,  offset]) children(); }
-    module armB_xf() { translate([  0,  0, 0]) rotate([0, -fold_deg, 0]) translate([flange_t, 0, offset]) children(); }
+    module armA_xf(xof=0) { translate([  0,  0, 0]) rotate([0, 0, 180]) translate([flange_t - xof, 0,  offset]) children(); }
+    module armB_xf(xof=0) { translate([  0,  0, 0]) rotate([0, -fold_deg, 0]) translate([flange_t + xof, 0, offset]) children(); }
 
     union() {
         // let's offeset all not center
         // then when we do rotation it's not around center of the object
         
+        armA_xf() flange_block();
+        armB_xf() flange_block();
         hull() 
         {
-            armA_xf() flange_block();
-            armB_xf() flange_block();
+            armA_xf(flange_t) flange_block();
+            armB_xf(-flange_t) flange_block();
         }
         armA_xf() { 
             snap_tab(); 
