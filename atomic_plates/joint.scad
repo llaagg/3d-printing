@@ -20,10 +20,11 @@ $fn = 32;
 wall      = 3;   // wall thickness of the plates, mm
 fit_clear = 0.25;   // per-side clearance between tab and slot, mm — tune after a test print
 
+plate_settings = plate_exports();
 // slot the tab must pass through — keep these equal to plates.scad's
 // joint_slot_w / joint_slot_h ("use" does not import variables across files)
-slot_w = 12;
-slot_h = 6;
+slot_w = plate_settings[0];
+slot_h = plate_settings[1];
 
 // ---------- barb / snap geometry ----------
 barb_h   = 0.9;   // barb overhang past the nominal finger thickness, mm
@@ -75,7 +76,7 @@ module flange_block() {
 // Arm A stays horizontal (the reference plate); arm B tilts by fold_deg about
 // the wall-run axis (Y), matching a plate rotated up out of the flat plane.
 module angle_joint(fold_deg, gap = bridge_gap) {
-    offset = (slot_h + 2*flange_pad)/2;
+    offset = (slot_h + 2*flange_pad)/2 ;
 
     module armA_xf() { translate([-gap/2,  0, 0]) rotate([0, 0, 180]) translate([0, 0, offset]) children(); }
     module armB_xf() { translate([ gap/2,  0, 0]) rotate([0, fold_deg, 0]) translate([0, 0, offset]) children(); }
@@ -84,7 +85,7 @@ module angle_joint(fold_deg, gap = bridge_gap) {
         // let's offeset all not center
         // then when we do rotation it's not around center of the object
         
-        hull() 
+        //hull() 
         {
             armA_xf() flange_block();
             armB_xf() flange_block();

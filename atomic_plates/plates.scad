@@ -21,7 +21,7 @@ module rounded_box(w, l, h, r, m = wall_margin) {
 // Rectangular through-cuts in a wall so a snap-fit joint (see joint.scad)
 // can be plugged into the plate. Slots are centered on the wall's height
 // by default and placed on the straight (non-rounded) section of the wall.
-joint_slot_w = 12;   // slot width along the wall run, mm
+joint_slot_w = 30;   // slot width along the wall run, mm
 joint_slot_h = 6;     // slot height, mm
 
 // Build a list of [side, offset, z_offset] joint entries spaced along one wall.
@@ -30,6 +30,8 @@ function make_side_joints(side, slot_count, pitch = 50, start = 25, z_offset = 0
     for (i = [0 : slot_count - 1])
         [side, start + pitch * i, z_offset]
 ];
+
+function plate_exports() = [joint_slot_w, joint_slot_h];
 
 // side: "north" | "south" | "east" | "west" — which outer wall to cut through
 // offset: distance of the slot center from the wall's left/bottom edge along the wall run
