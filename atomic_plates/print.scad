@@ -2,19 +2,41 @@ use <plates.scad>;
 use <joint.scad>;
 
 
-print(2);
+// total number of plates to print
+numberOfPlates=1;
 
-module print(pcount = 1, w=50)
+// height of frame
+height = 10;
+// number of modules along the X-axis
+no_of_modules_x = 1;
+// size of each module
+modulesize = 50;
+
+printPlate(numberOfPlates, modulesize, height, no_of_modules_x);
+printJoints(h=height, t=4);
+
+module printPlate(pcount = 1, w=modulesize, h=10, no_of_modules_x = 2)
 {
-    h=10;
-    t=5;
+    t=4;
 
     th=h+t;
 
+
+    for(i = [0:pcount-1])
+        translate([i*w + i*5, 0, th])
+            rotate([0, 180, 0])
+            print_footprint(
+              sizex = w, sizey = w, sizez = h, 
+              top = t, 
+              scount_x = no_of_modules_x, scount_y = no_of_modules_x);
+}
+
+module printJoints(h=10, t=4)
+{
     joint_h = joint_height();
     joint_w = joint_width();
 
-    angles = [0, 15, 45, 60, 90];
+    angles = [0, 45, 90, 180];
     
     //all angles moved by 180 degrees around the Z-axis
     for(i = [0:len(angles)-1])
@@ -25,11 +47,8 @@ module print(pcount = 1, w=50)
             angle_joint(angles[i], t, h);
     }
 
-    for(i = [0:pcount-1])
-        translate([i*w + i*5, 0, th])
-            rotate([0, 180, 0])
-            print_footprint(sizex = w, sizey = w, sizez = h, top = t);
 }
+
 
 module demo90(a=90)
 {
@@ -44,65 +63,9 @@ module demo90(a=90)
         angle_joint(a, t, h);
 
     translate([0, 0, -th])
-        print_footprint(sizez = h, top = t);
+        print_footprint(sizex = modulesize, sizey = modulesize, sizez = h, top = t, scount_x = no_of_modules_x, scount_y = no_of_modules_x);
     
     rotate([0, a, 0])
         translate([-50, 0, -th])
-        print_footprint(sizez = h, top = t);
-}
-
-module printLarge() {
-  translate([0, 0, 19])
-    rotate([0, 180, 0])
-      print_footprint(sizex=100, sizey=100);
-}
-
-module showTwoPlates(angle) {
-  translate([0, 0, 0])
-    rotate([0, 0, 0])
-      print_footprint();
-
-  translate([50, 0, 0])
-    rotate([0, angle, 0])
-      print_footprint();
-
-  translate([50, 25, 1])
-    angle_joint(angle);
-
-  translate([-20, 0, 70])
-    rotate([0, angle, 0])
-      print_footprint();
-
-  translate([0, 25, 14])
-    rotate([0, angle + 90, 0])
-      angle_joint(angle);
-}
-
-module joins_demo() {
-
-  plates = plate_exports();
-  h = plates[0];
-  h1 = plates[1];
-  // joints
-  translate([0, 0, 0]) {
-    translate([0, 0, h1])
-      rotate([90, 0, 0])
-        angle_joint(0, 2, 10);
-
-    translate([0, 15, 8.5])
-      rotate([90, 0, 0])
-        angle_joint(30, 2, 10);
-
-    translate([0, 30, 8.5])
-      rotate([90, 0, 0])
-        angle_joint(45, 2, 10);
-
-    translate([0, 45, 8.5])
-      rotate([90, 0, 0])
-        angle_joint(60, 2, 10);
-
-    translate([0, 60, 8.5])
-      rotate([90, 0, 0])
-        angle_joint(90, 2, 10   );
-  }
+        print_footprint(sizex = modulesize, sizey = modulesize, sizez = h, top = t, scount_x = no_of_modules_x, scount_y = no_of_modules_x);
 }

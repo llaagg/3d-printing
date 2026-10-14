@@ -37,6 +37,13 @@ The separate top has thickness `top_t`. In split mode, the wall section height i
 - 10 x 10 x 1.5 cm (commented out)
 - 20 x 20 x 1.5 cm (commented out)
 
+## Atomic-bomb plate variant (`atomic_bomb_plate.scad`)
+
+An additional 50 x 50 mm plate with a continuous mushroom-cloud outline
+recessed into its flat top and a contrasting-color inlay. Set `part` to
+`"preview"` to view both colors, or to `"plate"` / `"inlay"` to export the
+matching geometry separately for assigning colors in a slicer.
+
 ## Joints (`joint.scad`)
 
 A snap-fit connector that joins two plates along their vertical walls, holding

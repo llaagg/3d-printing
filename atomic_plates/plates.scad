@@ -11,8 +11,8 @@ $fn = 32;
 // Rectangular through-cuts in a wall so a snap-fit joint (see joint.scad)
 // can be plugged into the plate. Slots are centered on the wall's height
 // by default and placed on the straight (non-rounded) section of the wall.
-joint_slot_w = 8;   // slot width along the wall run, mm
-joint_slot_h = 4;     // slot height, mm
+joint_slot_w = 12;   // slot width along the wall run, mm
+joint_slot_h = 6;     // slot height, mm
 
 function plate_exports() = [joint_slot_w, joint_slot_h, wall, wall_margin];
 
@@ -28,6 +28,7 @@ module rounded_box(w, l, h, r, m = wall_margin) {
 // Build a list of [side, offset, z_offset] joint entries spaced along one wall.
 // start is the first slot center offset from the wall edge; pitch is the spacing.
 function make_side_joints(side, slot_count, pitch = 50, start = 25, z_offset = 0) = [
+
     for (i = [0 : slot_count - 1])
         [side, start + pitch * i, z_offset]
 ];
@@ -105,18 +106,20 @@ module footprint_box(w, l, h, joints = [], top_trim = 0, top_height = 4) {
             plate_top(w, l, top_height);
 }
 
+
 // Build a printable footprint layout with joints on all four outer walls.
-module print_footprint(tt = 0.5, sizex = 50, sizey = 50, sizez = 10, top = 4) {
-    slot_count_x = ceil(sizex / 50);
-    slot_count_y = ceil(sizey / 50);
+// tt- top trim for the footprint box, can be 0
+module print_footprint(sizex = 50, sizey = 50, sizez = 10, top = 4, scount_x = 1, scount_y = 1, tt = 0.5) {
+    slot_count_x = scount_x;
+    slot_count_y = scount_y;
     slots = concat(
-        make_side_joints("north", slot_count_x),
-        make_side_joints("south", slot_count_x),
-        make_side_joints("east", slot_count_y),
-        make_side_joints("west", slot_count_y)
+        make_side_joints("north", slot_count_x, sizex, sizex / 2),
+        make_side_joints("south", slot_count_x, sizex, sizex/ 2),
+        make_side_joints("east", slot_count_y, sizey , sizey / 2),
+        make_side_joints("west", slot_count_y, sizey , sizey / 2)
     );
 
-    footprint_box(sizex, sizey, sizez,
+    footprint_box(sizex* slot_count_x, sizey* slot_count_y, sizez,
         joints = slots,
         top_trim = tt,
         top_height = top);
