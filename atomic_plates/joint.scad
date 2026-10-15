@@ -21,10 +21,10 @@ fit_clear = 0.25;   // per-side clearance between tab and slot, mm — tune afte
 
 plate_settings = plate_exports();
 
-slot_w = plate_settings[0];
-slot_h = plate_settings[1];
-wall = plate_settings[2];  //-1
-wall_margin = plate_settings[3];
+slot_w =        plate_settings[0];
+slot_h =        plate_settings[1];
+wall =          plate_settings[2];  //-1
+wall_margin =   plate_settings[3];
 
 // ---------- barb / snap geometry ----------
 barb_h   = 0.9;   // barb overhang past the nominal finger thickness, mm
@@ -36,7 +36,8 @@ lead_in  = 0.6;   // small chamfer at the very tip, mm
 // ---------- flange / bridge geometry ----------
 flange_t   = wall_margin;   // flange thickness against the wall face, mm
 flange_pad = 2;   // flange overhang beyond the slot on each side, mm
-reach      = wall + barb_len + 1;  // tab length: through the wall, clear of the barb
+reach      = wall + barb_len;  // tab length: through the wall, clear of the barb
+
 
 // One flexing finger with a one-way barb (2D profile in X-Z, extruded along Y).
 // X: 0 = flange face, `reach` = tip. Z: z_bot = inner edge (against the slit).

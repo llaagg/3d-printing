@@ -1,0 +1,11 @@
+{
+    "parameterSets": {
+        "design default values": {
+            "height": "11",
+            "modulesize": "50",
+            "no_of_modules_x": "1",
+            "numberOfPlates": "4"
+        }
+    },
+    "fileFormatVersion": "1"
+}
