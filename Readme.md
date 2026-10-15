@@ -3,3 +3,5 @@ A collection of various 3D printing projects, including models, designs, and tut
 
 ## Projects
  - [Atomic Plates](atomic_plates/) - modular plates designed for structure models.
+
+  <img src="atomic_plates/joint_preview.png" alt="Joint demo" width="200">
